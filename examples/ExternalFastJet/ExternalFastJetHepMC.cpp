@@ -74,7 +74,7 @@ Then run (you need an event file in HepMC format):
 #include "modules/Delphes.h"
 #include "classes/DelphesClasses.h"
 #include "classes/DelphesFactory.h"
-#include "classes/DelphesHepMCReader.h"
+#include "classes/DelphesHepMC3Reader.h"
 
 #include "ExRootAnalysis/ExRootTreeWriter.h"
 #include "ExRootAnalysis/ExRootTreeBranch.h"
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
   Delphes *modularDelphes = 0;
   DelphesFactory *factory = 0;
   TObjArray *stableParticleOutputArray = 0, *allParticleOutputArray = 0, *partonOutputArray = 0;
-  DelphesHepMCReader *reader = 0;
+  DelphesHepMC3Reader *reader = 0;
   Int_t i, maxEvents, skipEvents;
   Long64_t length, eventCounter;
   
@@ -148,7 +148,6 @@ int main(int argc, char *argv[])
   {
     confReader = new ExRootConfReader;
     confReader->ReadFile(argv[1]);
-
     maxEvents = confReader->GetInt("::MaxEvents", 0);
     skipEvents = confReader->GetInt("::SkipEvents", 0);
 
@@ -170,7 +169,7 @@ int main(int argc, char *argv[])
     stableParticleOutputArray = modularDelphes->ExportArray("stableParticles");
     partonOutputArray = modularDelphes->ExportArray("partons");
 
-    reader = new DelphesHepMCReader;
+    reader = new DelphesHepMC3Reader;
 
     modularDelphes->InitTask();
 
@@ -226,9 +225,9 @@ int main(int argc, char *argv[])
         }
       }
 
-      
+     int nJets = 0; 
       reader->SetInputFile(inputFile);
-
+cout << "start loop" << endl;
       // Loop over all objects
       eventCounter = 0;
       modularDelphes->Clear();
@@ -241,6 +240,7 @@ int main(int argc, char *argv[])
 	 // loop over events
 	if(reader->EventReady())
         {
+		cout << "event #" << eventCounter << endl;
           ++eventCounter;
 
           if(eventCounter > skipEvents)
@@ -256,16 +256,17 @@ int main(int argc, char *argv[])
 	    // pass delphes candidates to fastjet clustering  
              while((candidate = static_cast<Candidate*>(inputIterator->Next())))
             {
+		if(candidate->Status != 1) continue;
               momentum = candidate->Momentum;
               jet = PseudoJet(momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E());
               inputList.push_back(jet);
             }
-           
 	    // run fastjet clustering 
 	    ClusterSequence sequence(inputList, *definition);
             outputList.clear();
-            outputList = sorted_by_pt(sequence.inclusive_jets(0.0));
-
+            outputList = sorted_by_pt(sequence.inclusive_jets(20.0));
+//cout << "event #: " << eventCounter << " # jets: " << outputList.size() << " # particles: " << inputList.size() << endl;           
+    	    nJets += outputList.size();
             
 	    // Prints for the first event:
             //  - the description of the algorithm used
@@ -293,7 +294,7 @@ int main(int argc, char *argv[])
           reader->Clear();
         }
       } // end of event loop
-
+cout << "total # jets: " << nJets << endl;
       if(inputFile != stdin) fclose(inputFile);
 
       ++i;

@@ -4,10 +4,10 @@
 # You need to set ROOT_DIR, DELPHES_DIR and FASTJET_DIR for your project.
 
 # FastJet directory
-FASTJET_DIR = /opt/fastjet
+FASTJET_DIR = ~/fastjet-install
 
 # ROOT directory
-ROOT_DIR = /opt/root
+ROOT_DIR = /usr/local/root-6.18.02
 
 # Delphes directory
 DELPHES_DIR = ../..
