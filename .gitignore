@@ -2,9 +2,13 @@
 *.swp
 *.swo
 *bk
+*.pcm
+*.png
+*.root
 CaloGrid
 ClassesDict_rdict.pcm
-DelphesHepMC
+DelphesHepMC*
+DelphesPythia8
 DelphesLHEF
 DelphesROOT
 DelphesSTDHEP

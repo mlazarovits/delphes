@@ -13,6 +13,8 @@ set RandomSeed 123
 ## MOD2: set vtx mode timing to MC truth
 
 set B 2.0
+set R 2.25
+set HL 2.5
 
 ## Drift chamber coordinates
 set DCHZMIN -2.125
@@ -28,6 +30,7 @@ set DCHRMAX 2.02
 set ExecutionPath {
 
   TruthVertexFinder
+  UnstablePropagator
   ParticlePropagator
 
   ChargedHadronTrackingEfficiency
@@ -54,6 +57,7 @@ set ExecutionPath {
   PhotonIsolation
 
   MuonFilter
+  TowerMerger
 
   ElectronFilter
   ElectronEfficiency
@@ -69,6 +73,9 @@ set ExecutionPath {
   GenMissingET
 
   FastJetFinder
+
+  GenJetFinderDurhamN2
+  FastJetFinderDurhamN2
 
   JetEnergyScale
 
@@ -93,6 +100,29 @@ module TruthVertexFinder TruthVertexFinder {
   set VertexOutputArray vertices
 }
 
+###########################################
+# Propagate unstable particles in cylinder
+###########################################
+
+module UnstablePropagator UnstablePropagator {
+  set InputArray Delphes/allParticles
+
+  # inner radius of the solenoid, in m
+  set Radius $R
+
+  # half-length: z of the solenoid, in m
+  set HalfLength $HL
+
+  # minimum flight distance requested to propagate
+  # unstable charged particle in B field (in m)
+  set Lmin 1.0E-06
+
+  # magnetic field, in T
+  set Bz $B
+}
+
+
+
 #################################
 # Propagate particles in cylinder
 #################################
@@ -106,10 +136,10 @@ module ParticlePropagator ParticlePropagator {
   set MuonOutputArray muons
 
   # inner radius of the solenoid, in m
-  set Radius 2.25
+  set Radius $R
 
   # half-length: z of the solenoid, in m
-  set HalfLength 2.5
+  set HalfLength $HL
 
   # magnetic field, in T
   set Bz $B
@@ -126,8 +156,8 @@ module Efficiency ChargedHadronTrackingEfficiency {
 
     set EfficiencyFormula {
         (abs(eta) > 2.56)                                  * (0.000) +
-        (pt < 0.1) * (abs(eta) <= 2.56)                    * (0.000) +
-        (pt >= 0.1) * (abs(eta) <= 2.56)                   * (1.000)
+        (pt < 0.1) * (abs(eta) <= 2.56)       * (0.000) +
+        (pt >= 0.1) * (abs(eta) <= 2.56)      * (1.000)
     }
 }
 
@@ -161,8 +191,8 @@ module Efficiency MuonTrackingEfficiency {
 
     set EfficiencyFormula {
         (abs(eta) > 2.56)                                  * (0.000) +
-        (pt < 0.1) * (abs(eta) <= 2.56)                    * (0.000) +
-        (pt >= 0.1) * (abs(eta) <= 2.56)                   * (1.000)
+        (pt < 0.1) * (abs(eta) <= 2.56)       * (0.000) +
+        (pt >= 0.1) * (abs(eta) <= 2.56)      * (1.000)
     }
 }
 
@@ -470,10 +500,10 @@ module DualReadoutCalorimeter Calorimeter {
   set EFlowPhotonOutputArray eflowPhotons
   set EFlowNeutralHadronOutputArray eflowNeutralHadrons
 
-  set EnergyMin 0.5
-  set EnergySignificanceMin 3.0
+  set ECalMinSignificance 2.0
+  set HCalMinSignificance 2.5
 
-  set SmearLogNormal true
+  set SmearLogNormal false
 
   #set SmearTowerCenter true
   set SmearTowerCenter false
@@ -486,32 +516,25 @@ module DualReadoutCalorimeter Calorimeter {
     # Endcaps: deta=0.02 towers up to |eta| <= 3.0 (8.6° = 100 mrad)
     # Cell size: about 6 cm x 6 cm
 
-    #barrel:
+    set EtaPhiRes 0.02
+    set EtaMax 3.0
+
+    set pi [expr {acos(-1)}]
+
+    set nbins_phi [expr {$pi/$EtaPhiRes} ]
+    set nbins_phi [expr {int($nbins_phi)} ]
+
     set PhiBins {}
-    for {set i -120} {$i <= 120} {incr i} {
-        add PhiBins [expr {$i * $pi/120}]
-    }
-    #deta=0.02 units for |eta| <= 0.88
-    for {set i -44} {$i < 45} {incr i} {
-        set eta [expr {$i * 0.02}]
-        add EtaPhiBins $eta $PhiBins
+    for {set i -$nbins_phi} {$i <= $nbins_phi} {incr i} {
+      add PhiBins [expr {$i * $pi/$nbins_phi}]
     }
 
-    #endcaps:
-    set PhiBins {}
-    for {set i -120} {$i <= 120} {incr i} {
-        add PhiBins [expr {$i* $pi/120}]
-    }
-    #deta=0.02 units for 0.88 < |eta| <= 3.0
-    #first, from -3.0 to -0.88
-    for {set i 0} {$i <=106} {incr i} {
-        set eta [expr {-3.00 + $i * 0.02}]
-        add EtaPhiBins $eta $PhiBins
-    }
-    #same for 0.88 to 3.0
-    for  {set i 1} {$i <=106} {incr i} {
-        set eta [expr {0.88 + $i * 0.02}]
-        add EtaPhiBins $eta $PhiBins
+    set nbins_eta [expr {$EtaMax/$EtaPhiRes} ]
+    set nbins_eta [expr {int($nbins_eta)} ]
+
+    for {set i -$nbins_eta} {$i <= $nbins_eta} {incr i} {
+      set eta [expr {$i * $EtaPhiRes}]
+      add EtaPhiBins $eta $PhiBins
     }
 
     # default energy fractions {abs(PDG code)} {Fecal Fhcal}
@@ -538,14 +561,14 @@ module DualReadoutCalorimeter Calorimeter {
 
     # set ECalResolutionFormula {resolution formula as a function of eta and energy}
     set ECalResolutionFormula {
-    (abs(eta) <= 0.88 )                     * sqrt(energy^2*0.01^2 + energy*0.11^2)+
-    (abs(eta) > 0.88 && abs(eta) <= 3.0)    * sqrt(energy^2*0.01^2 + energy*0.11^2)
+    (abs(eta) <= 0.88 )                     * sqrt(energy^2*0.01^2 + energy*0.11^2 + 0.05^2)+
+    (abs(eta) > 0.88 && abs(eta) <= 3.0)    * sqrt(energy^2*0.01^2 + energy*0.11^2 + 0.05^2)
     }
 
     # set HCalResolutionFormula {resolution formula as a function of eta and energy}
     set HCalResolutionFormula {
-    (abs(eta) <= 0.88 )                     * sqrt(energy^2*0.01^2 + energy*0.30^2)+
-    (abs(eta) > 0.88 && abs(eta) <= 3.0)    * sqrt(energy^2*0.01^2 + energy*0.30^2)
+    (abs(eta) <= 0.88 )                     * sqrt(energy^2*0.01^2 + energy*0.3^2 + 0.05^2)+
+    (abs(eta) > 0.88 && abs(eta) <= 3.0)    * sqrt(energy^2*0.01^2 + energy*0.3^2 + 0.05^2)
     }
 }
 
@@ -605,6 +628,18 @@ module Merger EFlowMerger {
   add InputArray Calorimeter/eflowPhotons
   add InputArray TimeOfFlightNeutralHadron/eflowNeutralHadrons
   set OutputArray eflow
+}
+
+
+####################
+# Tower merger
+####################
+
+module Merger TowerMerger {
+# add InputArray InputArray
+  add InputArray Calorimeter/towers
+  add InputArray MuonFilter/muons
+  set OutputArray towers
 }
 
 
@@ -750,18 +785,6 @@ module Merger MissingET {
   set MomentumOutputArray momentum
 }
 
-##################
-# Scalar HT merger
-##################
-
-module Merger ScalarHT {
-# add InputArray InputArray
-  add InputArray UniqueObjectFinder/jets
-  add InputArray UniqueObjectFinder/electrons
-  add InputArray UniqueObjectFinder/photons
-  add InputArray UniqueObjectFinder/muons
-  set EnergyOutputArray energy
-}
 
 #####################
 # Neutrino Filter
@@ -781,6 +804,52 @@ module PdgCodeFilter NeutrinoFilter {
   add PdgCode {-14}
   add PdgCode {-16}
 }
+
+###################################
+# Gen Jet finder Durham exclusive
+###################################
+
+module FastJetFinder GenJetFinderDurhamN2 {
+
+  set InputArray NeutrinoFilter/filteredParticles
+  set OutputArray jets
+
+  # algorithm: 11 ee-durham kT algorithm
+  # ref: https://indico.cern.ch/event/1173562/contributions/4929025/attachments/2470068/4237859/2022-06-FCC-jets.pdf
+  # to run exclusive njet mode set NJets to int
+  # to run exclusive dcut mode set DCut to float
+  # if DCut > 0 will run in dcut mode
+
+  set JetAlgorithm 11
+  set ExclusiveClustering true
+  set NJets 2
+  # set DCut 10.0
+}
+
+################################
+# Jet finder Durham exclusive
+################################
+
+module FastJetFinder FastJetFinderDurhamN2 {
+#  set InputArray Calorimeter/towers
+  set InputArray EFlowMerger/eflow
+
+  set OutputArray jets
+
+  # algorithm: 11 ee-durham kT algorithm
+  # ref: https://indico.cern.ch/event/1173562/contributions/4929025/attachments/2470068/4237859/2022-06-FCC-jets.pdf
+  # to run exclusive njet mode set NJets to int
+  # to run exclusive dcut mode set DCut to float
+  # if DCut > 0 will run in dcut mode
+
+  set JetAlgorithm 11
+  set ExclusiveClustering true
+  set NJets 2
+  # set DCut 10.0
+
+}
+
+
 
 
 #####################
@@ -918,6 +987,7 @@ module TreeWriter TreeWriter {
     add Branch TimeOfFlightNeutralHadron/eflowNeutralHadrons EFlowNeutralHadron Tower
 
     add Branch EFlowMerger/eflow ParticleFlowCandidate ParticleFlowCandidate
+    add Branch Calorimeter/towers Tower Tower
 
     add Branch ElectronEfficiency/electrons Electron Electron
     add Branch MuonEfficiency/muons Muon Muon
@@ -928,6 +998,9 @@ module TreeWriter TreeWriter {
 
     add Branch GenJetFinder/jets GenJet Jet
     add Branch GenMissingET/momentum GenMissingET MissingET
+
+    add Branch GenJetFinderDurhamN2/jets GenJetDurhamN2 Jet
+    add Branch FastJetFinderDurhamN2/jets JetDurhamN2 Jet
 
     # add Info InfoName InfoValue
     add Info Bz $B

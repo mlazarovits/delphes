@@ -157,11 +157,6 @@ public:
   Float_t Y; // particle vertex position (y component) | hepevt.vhep[number][1]
   Float_t Z; // particle vertex position (z component) | hepevt.vhep[number][2]
 
-  Float_t decayX;
-  Float_t decayY;
-  Float_t decayZ;
-  Float_t decayT;
-
   static CompBase *fgCompare; //!
   const CompBase *GetCompare() const { return fgCompare; }
 
@@ -411,6 +406,7 @@ public:
   Int_t NSubJetsPruned; // number of subjets pruned
   Int_t NSubJetsSoftDropped; // number of subjets soft-dropped
 
+  Double_t ExclYmerge12;
   Double_t ExclYmerge23;
   Double_t ExclYmerge34;
   Double_t ExclYmerge45;
@@ -817,6 +813,7 @@ public:
   Int_t NSubJetsSoftDropped; // number of subjets soft-dropped
 
   // Exclusive clustering variables
+  Double_t ExclYmerge12;
   Double_t ExclYmerge23;
   Double_t ExclYmerge34;
   Double_t ExclYmerge45;
