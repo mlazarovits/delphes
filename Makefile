@@ -464,6 +464,8 @@ tmp/modules/ModulesDict.$(SrcSuf): \
 	modules/DecayFilter.h \
 	modules/ParticleDensity.h \
 	modules/TruthVertexFinder.h \
+	modules/VertexFinderDAClusterizerZT.h \
+	modules/HighMassVertexRecover.h \
 	modules/ExampleModule.h \
 	modules/LLPFilter.h \
 	modules/CscClusterEfficiency.h \
@@ -855,6 +857,15 @@ tmp/modules/Hector.$(ObjSuf): \
 	external/Hector/H_BeamLine.h \
 	external/Hector/H_BeamParticle.h \
 	external/Hector/H_RecRPObject.h
+tmp/modules/HighMassVertexRecover.$(ObjSuf): \
+	modules/HighMassVertexRecover.$(SrcSuf) \
+	modules/HighMassVertexRecover.h \
+	classes/DelphesClasses.h \
+	classes/DelphesFactory.h \
+	classes/DelphesFormula.h \
+	external/ExRootAnalysis/ExRootResult.h \
+	external/ExRootAnalysis/ExRootFilter.h \
+	external/ExRootAnalysis/ExRootClassifier.h
 tmp/modules/IdentificationMap.$(ObjSuf): \
 	modules/IdentificationMap.$(SrcSuf) \
 	modules/IdentificationMap.h \
@@ -1177,6 +1188,16 @@ tmp/modules/VertexFinder.$(ObjSuf): \
 	external/ExRootAnalysis/ExRootClassifier.h \
 	external/ExRootAnalysis/ExRootFilter.h \
 	external/ExRootAnalysis/ExRootResult.h
+tmp/modules/VertexFinderDAClusterizerZT.$(ObjSuf): \
+	modules/VertexFinderDAClusterizerZT.$(SrcSuf) \
+	modules/VertexFinderDAClusterizerZT.h \
+	classes/DelphesClasses.h \
+	classes/DelphesFactory.h \
+	classes/DelphesFormula.h \
+	classes/DelphesPileUpReader.h \
+	external/ExRootAnalysis/ExRootResult.h \
+	external/ExRootAnalysis/ExRootFilter.h \
+	external/ExRootAnalysis/ExRootClassifier.h
 tmp/modules/VertexFinderDA4D.$(ObjSuf): \
 	modules/VertexFinderDA4D.$(SrcSuf) \
 	modules/VertexFinderDA4D.h \
@@ -1285,6 +1306,7 @@ DELPHES_OBJ +=  \
 	tmp/modules/EnergySmearing.$(ObjSuf) \
 	tmp/modules/ExampleModule.$(ObjSuf) \
 	tmp/modules/Hector.$(ObjSuf) \
+	tmp/modules/HighMassVertexRecover.$(ObjSuf) \
 	tmp/modules/IdentificationMap.$(ObjSuf) \
 	tmp/modules/ImpactParameterSmearing.$(ObjSuf) \
 	tmp/modules/Isolation.$(ObjSuf) \
@@ -1321,6 +1343,7 @@ DELPHES_OBJ +=  \
 	tmp/modules/UnstablePropagator.$(ObjSuf) \
 	tmp/modules/VertexFinder.$(ObjSuf) \
 	tmp/modules/VertexFinderDA4D.$(ObjSuf) \
+	tmp/modules/VertexFinderDAClusterizerZT.$(ObjSuf) \
 	tmp/modules/VertexSorter.$(ObjSuf) \
 	tmp/modules/Weighter.$(ObjSuf)
 
@@ -2006,6 +2029,10 @@ external/fastjet/ClusterSequenceActiveAreaExplicitGhosts.hh: \
 	external/fastjet/LimitedWarning.hh
 	@touch $@
 
+modules/VertexFinderDAClusterizerZT.h: \
+	classes/DelphesModule.h
+	@touch $@
+
 external/fastjet/JetDefinition.hh: \
 	external/fastjet/internal/numconsts.hh \
 	external/fastjet/PseudoJet.hh \
@@ -2450,6 +2477,11 @@ modules/CscClusterId.h: \
 	classes/DelphesModule.h
 	@touch $@
 
+modules/HighMassVertexRecover.h: \
+	classes/DelphesModule.h \
+	classes/DelphesClasses.h
+	@touch $@
+
 classes/DelphesClasses.h: \
 	classes/SortableObject.h
 	@touch $@
@@ -2487,6 +2519,14 @@ $(NOFASTJET): $(DELPHES_DICT_OBJ) $(DELPHES_OBJ) $(TCL_OBJ)
 	@mkdir -p $(@D)
 	@echo ">> Building $@"
 ifeq ($(PLATFORM),macosx)
+	@echo "macosx platform"
+	@echo "LD" $(LD)
+	@echo "SOFLAGS" $(SOFLAGS)
+	@echo "LDFLAGS" $(LDFLAGS)
+	@echo "^" $^
+	@echo "OutPutOpt" $(OutPutOpt)
+	@echo "@" $@
+	@echo "DELPHES_LIBS" $(DELPHES_LIBS)
 	@$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@ $(DELPHES_LIBS)
 else
 ifeq ($(PLATFORM),win32)

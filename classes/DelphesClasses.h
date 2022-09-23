@@ -744,6 +744,10 @@ public:
   Float_t Xd;
   Float_t Yd;
   Float_t Zd;
+  Float_t Td;
+  
+  //Vertexing variables
+  Float_t VertexingWeight;
 
   Float_t XFirstHit;
   Float_t YFirstHit;
