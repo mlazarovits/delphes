@@ -1571,6 +1571,11 @@ tmp/external/fastjet/plugins/ATLASCone/JetConeFinderTool.$(ObjSuf): \
 	external/fastjet/plugins/ATLASCone/JetConeFinderTool.$(SrcSuf)
 tmp/external/fastjet/plugins/ATLASCone/JetSplitMergeTool.$(ObjSuf): \
 	external/fastjet/plugins/ATLASCone/JetSplitMergeTool.$(SrcSuf)
+tmp/external/fastjet/plugins/TimedCA/GeometricTimePlugin.$(ObjSuf): \
+	external/fastjet/plugins/TimedCA/GeometricTimePlugin.$(SrcSuf) \
+	external/fastjet/ClusterSequence.hh
+tmp/external/fastjet/plugins/TimedCA/CA_GeometricAlgorithm.$(ObjSuf): \
+	external/fastjet/plugins/TimedCA/CA_GeometricAlgorithm.$(SrcSuf)
 tmp/external/fastjet/plugins/CDFCones/CDFJetCluPlugin.$(ObjSuf): \
 	external/fastjet/plugins/CDFCones/CDFJetCluPlugin.$(SrcSuf) \
 	external/fastjet/ClusterSequence.hh
@@ -1689,6 +1694,7 @@ tmp/modules/FastJetFinder.$(ObjSuf): \
 	external/fastjet/PseudoJet.hh \
 	external/fastjet/Selector.hh \
 	external/fastjet/tools/JetMedianBackgroundEstimator.hh \
+	external/fastjet/plugins/TimedCA/fastjet/GeometricTimePlugin.hh \
 	external/fastjet/plugins/CDFCones/fastjet/CDFJetCluPlugin.hh \
 	external/fastjet/plugins/CDFCones/fastjet/CDFMidPointPlugin.hh \
 	external/fastjet/plugins/SISCone/fastjet/SISConePlugin.hh \
@@ -1717,6 +1723,7 @@ tmp/modules/FastJetGridMedianEstimator.$(ObjSuf): \
 	external/fastjet/Selector.hh \
 	external/fastjet/tools/JetMedianBackgroundEstimator.hh \
 	external/fastjet/tools/GridMedianBackgroundEstimator.hh \
+	external/fastjet/plugins/TimedCA/fastjet/GeometricTimePlugin.hh \
 	external/fastjet/plugins/CDFCones/fastjet/CDFJetCluPlugin.hh \
 	external/fastjet/plugins/CDFCones/fastjet/CDFMidPointPlugin.hh \
 	external/fastjet/plugins/SISCone/fastjet/SISConePlugin.hh \
@@ -1802,6 +1809,8 @@ FASTJET_OBJ +=  \
 	tmp/external/fastjet/plugins/CDFCones/CDFMidPointPlugin.$(ObjSuf) \
 	tmp/external/fastjet/plugins/CDFCones/JetCluAlgorithm.$(ObjSuf) \
 	tmp/external/fastjet/plugins/CDFCones/MidPointAlgorithm.$(ObjSuf) \
+	tmp/external/fastjet/plugins/TimedCA/GeometricTimePlugin.$(ObjSuf) \
+	tmp/external/fastjet/plugins/TimedCA/CA_GeometricAlgorithm.$(ObjSuf) \
 	tmp/external/fastjet/plugins/CMSIterativeCone/CMSIterativeConePlugin.$(ObjSuf) \
 	tmp/external/fastjet/plugins/D0RunICone/D0RunIBaseConePlugin.$(ObjSuf) \
 	tmp/external/fastjet/plugins/D0RunIICone/D0RunIIConePlugin.$(ObjSuf) \
@@ -2326,6 +2335,10 @@ modules/TruthVertexFinder.h: \
 
 classes/DelphesSTDHEPReader.h: \
 	classes/DelphesXDRReader.h
+	@touch $@
+
+external/fastjet/plugins/CDFCones/fastjet/GeometricTimePlugin.hh: \
+	external/fastjet/JetDefinition.hh
 	@touch $@
 
 external/fastjet/plugins/CDFCones/fastjet/CDFMidPointPlugin.hh: \

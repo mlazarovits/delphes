@@ -100,6 +100,11 @@ private:
   Double_t fRcutOff;
   Int_t fN;
 
+
+  // -- Geometric Time Algorithm --
+  Double_t fWeight;
+
+
   //-- Trimming parameters --
 
   Bool_t fComputeTrimming;

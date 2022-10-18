@@ -58,6 +58,7 @@
 #include "fastjet/plugins/CDFCones/fastjet/CDFJetCluPlugin.hh"
 #include "fastjet/plugins/CDFCones/fastjet/CDFMidPointPlugin.hh"
 #include "fastjet/plugins/SISCone/fastjet/SISConePlugin.hh"
+#include "fastjet/plugins/TimedCA/fastjet/GeometricTimePlugin.hh"
 
 #include "fastjet/contribs/Nsubjettiness/ExtraRecombiners.hh"
 #include "fastjet/contribs/Nsubjettiness/Njettiness.hh"
@@ -77,7 +78,7 @@ using namespace fastjet::contrib;
 //------------------------------------------------------------------------------
 
 FastJetFinder::FastJetFinder() :
-  fPlugin(0), fRecomb(0), fAxesDef(0), fMeasureDef(0), fNjettinessPlugin(0), fValenciaPlugin(0),
+  fPlugin(0), fRecomb(0), fAxesDef(0), fMeasureDef(0), fNjettinessPlugin(0),fValenciaPlugin(0), 
   fDefinition(0), fAreaDefinition(0), fItInputArray(0)
 {
 }
@@ -130,10 +131,15 @@ void FastJetFinder::Init()
   fExclusiveClustering = GetBool("ExclusiveClustering", false);
   fDCut = GetDouble("DCut", 0.0);
 
-  //-- Valencia Linear Collider algorithm
+  //-- Valencia Linear Collider algorithm --
 
   fGamma = GetDouble("Gamma", 1.0);
   //fBeta parameter see above
+
+  // -- Geometric Time Algorithm --
+  fWeight = GetDouble("Weight", 2.99792458E8);
+  //fParameterR set above
+
 
   fMeasureDef = new NormalizedMeasure(fBeta, fParameterR);
 
@@ -257,6 +263,12 @@ void FastJetFinder::Init()
   // 2. dcut mode: stop when all dij above some threshold dcut. Is applied if fDCut > 0.
   case 11:
     fDefinition = new JetDefinition(ee_kt_algorithm);
+    break;
+  
+//add new timing clustering algos here
+   case 12:
+    plugin = new GeometricTimePlugin(fParameterR, fWeight);
+    fDefinition = new JetDefinition(plugin);
     break;
 
   }
